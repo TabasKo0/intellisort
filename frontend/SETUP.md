@@ -9,7 +9,7 @@
 ### 2. Environment Variables (Next.js)
 Add these to your Vercel project:
 - NEXT_PUBLIC_SUPABASE_URL - Your Supabase project URL
-- NEXT_PUBLIC_SUPABASE_ANON_KEY - Your Supabase anon key
+- NEXT_PUBLIC_SUPABASE_ANON - Your Supabase anon key
 - PYTHON_SERVER_URL - URL to Python backend (e.g., http://localhost:5000)
 
 ### 3. Python Backend Setup
