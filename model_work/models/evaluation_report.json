@@ -1,0 +1,143 @@
+{
+  "metadata": {
+    "model_path": "best.pt",
+    "model_type": "YOLOv8s-cls",
+    "evaluation_date": "2026-02-04T13:31:23.402086",
+    "dataset": "..\\data\\combined_dataset",
+    "deployment_status": "PRODUCTION_READY"
+  },
+  "overall_metrics": {
+    "total_test_images": 3068,
+    "top1_accuracy": 0.9445893089960886,
+    "top5_accuracy": 1.0,
+    "total_correct": 2898,
+    "total_errors": 170,
+    "error_rate": 0.05541069100391134
+  },
+  "per_class_metrics": {
+    "cardboard": {
+      "test_images": 236,
+      "correct_predictions": 232,
+      "top1_accuracy": 0.9830508474576272,
+      "top5_accuracy": 1.0,
+      "avg_confidence": 0.9861321363408687
+    },
+    "glass": {
+      "test_images": 354,
+      "correct_predictions": 346,
+      "top1_accuracy": 0.9774011299435028,
+      "top5_accuracy": 1.0,
+      "avg_confidence": 0.9742865383119905
+    },
+    "metal": {
+      "test_images": 354,
+      "correct_predictions": 330,
+      "top1_accuracy": 0.9322033898305083,
+      "top5_accuracy": 1.0,
+      "avg_confidence": 0.9641467977715077
+    },
+    "organic": {
+      "test_images": 354,
+      "correct_predictions": 351,
+      "top1_accuracy": 0.9915254237288136,
+      "top5_accuracy": 1.0,
+      "avg_confidence": 0.9885794860495012
+    },
+    "paper": {
+      "test_images": 472,
+      "correct_predictions": 435,
+      "top1_accuracy": 0.9216101694915254,
+      "top5_accuracy": 1.0,
+      "avg_confidence": 0.947874178383815
+    },
+    "plastic": {
+      "test_images": 944,
+      "correct_predictions": 879,
+      "top1_accuracy": 0.9311440677966103,
+      "top5_accuracy": 1.0,
+      "avg_confidence": 0.9627651941283779
+    },
+    "trash": {
+      "test_images": 354,
+      "correct_predictions": 325,
+      "top1_accuracy": 0.9180790960451978,
+      "top5_accuracy": 1.0,
+      "avg_confidence": 0.952147350220357
+    }
+  },
+  "confusion_analysis": [
+    {
+      "true_class": "trash",
+      "predicted_as": "paper",
+      "count": 15,
+      "confusion_rate": 0.042372881355932195
+    },
+    {
+      "true_class": "paper",
+      "predicted_as": "plastic",
+      "count": 15,
+      "confusion_rate": 0.03177966101694915
+    },
+    {
+      "true_class": "plastic",
+      "predicted_as": "paper",
+      "count": 22,
+      "confusion_rate": 0.023305084745762712
+    },
+    {
+      "true_class": "metal",
+      "predicted_as": "paper",
+      "count": 8,
+      "confusion_rate": 0.022598870056497175
+    },
+    {
+      "true_class": "glass",
+      "predicted_as": "plastic",
+      "count": 6,
+      "confusion_rate": 0.01694915254237288
+    },
+    {
+      "true_class": "cardboard",
+      "predicted_as": "paper",
+      "count": 3,
+      "confusion_rate": 0.012711864406779662
+    }
+  ],
+  "disposal_mapping": {
+    "plastic": {
+      "disposal": "Recyclable",
+      "bin_color": "Blue/Yellow",
+      "tip": "Rinse containers and check recycling number (1, 2, 5 typically accepted)"
+    },
+    "glass": {
+      "disposal": "Recyclable",
+      "bin_color": "Green/Blue",
+      "tip": "Remove caps, rinse thoroughly. Glass can be recycled infinitely!"
+    },
+    "metal": {
+      "disposal": "Recyclable",
+      "bin_color": "Blue",
+      "tip": "Rinse cans and crush to save space"
+    },
+    "paper": {
+      "disposal": "Recyclable",
+      "bin_color": "Blue",
+      "tip": "Keep dry and clean. Remove any plastic coating"
+    },
+    "cardboard": {
+      "disposal": "Recyclable",
+      "bin_color": "Blue",
+      "tip": "Flatten boxes. Remove tape and labels if possible"
+    },
+    "organic": {
+      "disposal": "Compost",
+      "bin_color": "Brown/Green",
+      "tip": "Great for composting! Creates nutrient-rich soil"
+    },
+    "trash": {
+      "disposal": "Landfill",
+      "bin_color": "Black/Gray",
+      "tip": "Cannot be recycled. Consider reducing usage"
+    }
+  }
+}

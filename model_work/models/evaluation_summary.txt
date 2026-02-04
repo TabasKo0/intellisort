@@ -1,0 +1,18 @@
+======================================================================
+WASTE CLASSIFIER - EVALUATION SUMMARY
+======================================================================
+
+Model: YOLOv8s-cls
+Date: 2026-02-04 13:31:23
+Overall Accuracy: 94.46%
+Deployment Status: PRODUCTION_READY
+
+Per-Class Performance:
+----------------------------------------------------------------------
+  cardboard   :  98.3% (conf:  98.6%)
+  glass       :  97.7% (conf:  97.4%)
+  metal       :  93.2% (conf:  96.4%)
+  organic     :  99.2% (conf:  98.9%)
+  paper       :  92.2% (conf:  94.8%)
+  plastic     :  93.1% (conf:  96.3%)
+  trash       :  91.8% (conf:  95.2%)

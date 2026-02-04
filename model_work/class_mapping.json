@@ -1,0 +1,83 @@
+{
+  "mapping": {
+    "plastic": [
+      "plastic_cup_lids",
+      "plastic_detergent_bottles",
+      "plastic_food_containers",
+      "plastic_shopping_bags",
+      "plastic_soda_bottles",
+      "plastic_straws",
+      "plastic_water_bottles",
+      "disposable_plastic_cutlery",
+      "plastic_film"
+    ],
+    "glass": [
+      "glass_beverage_bottles",
+      "glass_cosmetic_containers",
+      "glass_food_jars"
+    ],
+    "metal": [
+      "aerosol_cans",
+      "aluminum_food_cans",
+      "aluminum_soda_cans",
+      "metal_bottle_caps"
+    ],
+    "paper": [
+      "magazines",
+      "newspaper",
+      "office_paper",
+      "paper_cups"
+    ],
+    "cardboard": [
+      "cardboard_boxes",
+      "cardboard_packaging"
+    ],
+    "organic": [
+      "coffee_grounds",
+      "eggshells",
+      "food_waste"
+    ],
+    "trash": [
+      "styrofoam_food_containers",
+      "clothing",
+      "shoes"
+    ]
+  },
+  "disposal": {
+    "plastic": {
+      "disposal": "Recyclable",
+      "bin_color": "Blue/Yellow",
+      "tip": "Rinse containers and check recycling number (1, 2, 5 typically accepted)"
+    },
+    "glass": {
+      "disposal": "Recyclable",
+      "bin_color": "Green/Blue",
+      "tip": "Remove caps, rinse thoroughly. Glass can be recycled infinitely!"
+    },
+    "metal": {
+      "disposal": "Recyclable",
+      "bin_color": "Blue",
+      "tip": "Rinse cans and crush to save space"
+    },
+    "paper": {
+      "disposal": "Recyclable",
+      "bin_color": "Blue",
+      "tip": "Keep dry and clean. Remove any plastic coating"
+    },
+    "cardboard": {
+      "disposal": "Recyclable",
+      "bin_color": "Blue",
+      "tip": "Flatten boxes. Remove tape and labels if possible"
+    },
+    "organic": {
+      "disposal": "Compost",
+      "bin_color": "Brown/Green",
+      "tip": "Great for composting! Creates nutrient-rich soil"
+    },
+    "trash": {
+      "disposal": "Landfill",
+      "bin_color": "Black/Gray",
+      "tip": "Cannot be recycled. Consider reducing usage"
+    }
+  }
+}
