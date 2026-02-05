@@ -46,11 +46,11 @@ export async function POST(request: NextRequest) {
     const classificationResult = await pythonResponse.json()
 
     // Store in database
-    // Validate expected fields from classifier
-    const waste_category = classificationResult?.waste_category ?? null
-    const disposal_type = classificationResult?.disposal_type ?? null
+    // Validate expected fields from classifier (new response format)
+    const waste_category = classificationResult?.category ?? null
+    const disposal_type = classificationResult?.disposal ?? null
     const confidence = typeof classificationResult?.confidence === "number" ? classificationResult.confidence : null
-    const tip = classificationResult?.tip ?? null
+    const tip = null
 
     const { error: dbError } = await supabase.from("waste_classifications").insert({
       user_id: user.id,

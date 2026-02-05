@@ -8,10 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useState as useReactState } from "react"
 
 interface UploadResponse {
-  waste_category: string
-  disposal_type: string
+  category: string
+  disposal: string
   confidence: number
-  tip: string
+  bin_color: string
 }
 
 interface ImageUploadProps {

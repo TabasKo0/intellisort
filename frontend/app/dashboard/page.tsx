@@ -98,19 +98,22 @@ export default function DashboardPage() {
           <div className="mt-12">
             <h2 className="text-2xl font-bold text-emerald-700 mb-4">Recent Classifications</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {history.map((item, idx) => (
+              {history.map((item, idx) => {
+                const displayCategory = item.category ?? item.waste_category
+                const displayDisposal = item.disposal ?? item.disposal_type
+                return (
                 <Card key={idx}>
                   <CardContent className="pt-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-semibold text-emerald-700">{item.waste_category}</p>
-                        <p className="text-sm text-muted-foreground">{item.disposal_type}</p>
+                        <p className="font-semibold text-emerald-700">{displayCategory}</p>
+                        <p className="text-sm text-muted-foreground">{displayDisposal}</p>
                       </div>
                       <p className="text-sm font-medium">{(item.confidence * 100).toFixed(0)}%</p>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              )})}
             </div>
           </div>
         )}
