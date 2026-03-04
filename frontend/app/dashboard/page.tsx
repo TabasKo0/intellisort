@@ -9,6 +9,19 @@ import { ImageUpload } from "@/components/image-upload"
 import ClassificationResult from "@/components/classification-result"
 import { Header } from "@/components/header"
 import Link from "next/link"
+import { Trash2 } from "lucide-react"
+import { toast } from "sonner"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -16,6 +29,20 @@ export default function DashboardPage() {
   const [result, setResult] = useState<any | null>(null)
   const [history, setHistory] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+
+  const handleDelete = async (id: string) => {
+    console.log(`Attempting to delete record with id: ${id}`);
+    const supabase = createClient()
+    const { error } = await supabase.from('waste_classifications').delete().eq('id', id);
+
+    if (error) {
+      console.error("Delete error:", error)
+      toast.error("Failed to delete record")
+    } else {
+      setHistory(history.filter((item) => item.id !== id))
+      toast.success("Classification deleted")
+    }
+  }
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -36,7 +63,6 @@ export default function DashboardPage() {
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
-        .limit(10)
 
       setHistory(data || [])
       setLoading(false)
@@ -65,6 +91,7 @@ export default function DashboardPage() {
                 setResult(newResult)
                 setHistory([newResult, ...history.slice(0, 9)])
               }}
+              result={result}
             />
           </div>
 
@@ -102,7 +129,30 @@ export default function DashboardPage() {
                 const displayCategory = item.category ?? item.waste_category
                 const displayDisposal = item.disposal ?? item.disposal_type
                 return (
-                <Card key={idx}>
+                <Card key={idx} className="relative group">
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete this classification record from your history.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(item.id)}>Delete</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                   <CardContent className="pt-6">
                     <div className="flex items-center justify-between">
                       <div>

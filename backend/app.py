@@ -21,13 +21,24 @@ except Exception as e:
     pipeline = None
 
 # Waste info (Ensure classes match your pipeline config: cardboard, glass, metal, paper, plastic, trash)
-WASTE_INFO = {
+'''WASTE_INFO = {
     'cardboard': {'disposal': 'Recycle', 'bin_color': 'Blue'},
     'glass': {'disposal': 'Recycle', 'bin_color': 'Blue'},
     'metal': {'disposal': 'Recycle', 'bin_color': 'Blue'},
     'paper': {'disposal': 'Recycle', 'bin_color': 'Blue'},
     'plastic': {'disposal': 'Recycle', 'bin_color': 'Blue'},
     'trash': {'disposal': 'Landfill', 'bin_color': 'Black'}
+}'''
+WASTE_INFO = {
+    'Cardboard': {'disposal': 'Recycle', 'bin_color': 'Blue'},
+    'Food Organics': {'disposal': 'Compost', 'bin_color': 'Green'},
+    'Glass': {'disposal': 'Recycle', 'bin_color': 'Blue'},
+    'Metal': {'disposal': 'Recycle', 'bin_color': 'Blue'},
+    'Miscellaneous Trash': {'disposal': 'Landfill', 'bin_color': 'Black'},
+    'Paper': {'disposal': 'Recycle', 'bin_color': 'Blue'},
+    'Plastic': {'disposal': 'Recycle', 'bin_color': 'Blue'},
+    'Textile Trash': {'disposal': 'Donation/Special Recycling', 'bin_color': 'Yellow'},
+    'Vegetation': {'disposal': 'Compost/Yard Waste', 'bin_color': 'Green'}
 }
 
 @app.route('/health', methods=['GET'])

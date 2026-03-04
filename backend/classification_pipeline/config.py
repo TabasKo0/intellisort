@@ -10,7 +10,18 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 YOLO_WEIGHTS = "classification_pipeline/models/detector_model.pt"           # PUT YOUR YOLO MODEL HERE
 RESNET_WEIGHTS = "classification_pipeline/models/classifier_model.pt"  # PUT YOUR RESNET MODEL HERE
 
-CLASSES = ["cardboard", "glass", "metal", "paper", "plastic", "trash"]
+#CLASSES = ["cardboard", "glass", "metal", "paper", "plastic", "trash"]
+CLASSES = [
+    "Cardboard", 
+    "Food Organics", 
+    "Glass", 
+    "Metal", 
+    "Miscellaneous Trash", 
+    "Paper", 
+    "Plastic", 
+    "Textile Trash", 
+    "Vegetation"
+]
 YOLO_CONFIDENCE_THRESHOLD = 0.25
 CROP_PADDING_RATIO = 0.10
 

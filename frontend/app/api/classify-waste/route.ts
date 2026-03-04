@@ -52,21 +52,29 @@ export async function POST(request: NextRequest) {
     const confidence = typeof classificationResult?.confidence === "number" ? classificationResult.confidence : null
     const tip = null
 
-    const { error: dbError } = await supabase.from("waste_classifications").insert({
-      user_id: user.id,
-      image_url: typeof image === "string" ? image.substring(0, 100) : null,
-      waste_category,
-      disposal_type,
-      confidence,
-      tip,
-    })
+    const { data: insertedRecord, error: dbError } = await supabase
+      .from("waste_classifications")
+      .insert({
+        user_id: user.id,
+        image_url: typeof image === "string" ? image.substring(0, 100) : null,
+        waste_category,
+        disposal_type,
+        confidence,
+        tip,
+      })
+      .select()
+      .single()
 
     if (dbError) {
       console.error("DB insert error:", dbError)
       return NextResponse.json({ error: "DB insert failed", details: dbError.message }, { status: 500 })
     }
 
-    return NextResponse.json(classificationResult)
+    return NextResponse.json({
+      ...classificationResult,
+      id: insertedRecord.id,
+      created_at: insertedRecord.created_at,
+    })
   } catch (error) {
     console.error("Error:", error)
     return NextResponse.json(

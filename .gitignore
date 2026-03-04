@@ -4,3 +4,4 @@ runs
 yolov8s-cls.pt
 yolo26n.pt
 model_work/tests
+backend/classification_pipeline/models
