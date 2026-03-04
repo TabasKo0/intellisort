@@ -8,13 +8,17 @@ class WasteDetector:
 
     def detect_and_crop(self, img_pil, conf=config.YOLO_CONFIDENCE_THRESHOLD, padding=config.CROP_PADDING_RATIO):
         img_w, img_h = img_pil.size
+        # Run inference
         results = self.model(img_pil, conf=conf, verbose=False)[0]
         boxes = results.boxes
+        names = results.names  # class names dict {0: 'person', 1: 'bicycle', ...}
 
         detections = []
         for box in boxes:
             x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
             yolo_conf = float(box.conf[0].cpu())
+            cls_id = int(box.cls[0].cpu())
+            yolo_class_name = names[cls_id]
 
             bw, bh = x2 - x1, y2 - y1
             pad_x, pad_y = bw * padding, bh * padding
@@ -27,6 +31,7 @@ class WasteDetector:
             detections.append({
                 "bbox": [float(x1), float(y1), float(x2), float(y2)],
                 "yolo_confidence": yolo_conf,
+                "yolo_class": yolo_class_name,
                 "crop_image": crop_pil
             })
         return detections
