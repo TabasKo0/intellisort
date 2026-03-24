@@ -3,9 +3,8 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
+import { UploadCloud, ImageIcon, RefreshCw, Sparkles } from "lucide-react"
 
 interface Detection {
   bbox: [number, number, number, number]
@@ -32,6 +31,7 @@ export function ImageUpload({ onSuccess, isLoading = false, result }: ImageUploa
   const [preview, setPreview] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isDragOver, setIsDragOver] = useState(false)
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 })
   const [displaySize, setDisplaySize] = useState({ width: 0, height: 0 })
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -46,7 +46,6 @@ export function ImageUpload({ onSuccess, isLoading = false, result }: ImageUploa
     const reader = new FileReader()
     reader.onload = (e) => {
       setPreview(e.target?.result as string)
-      // Reset image size and display size when a new image is selected
       setImageSize({ width: 0, height: 0 })
       setDisplaySize({ width: 0, height: 0 })
     }
@@ -55,6 +54,7 @@ export function ImageUpload({ onSuccess, isLoading = false, result }: ImageUploa
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
+    setIsDragOver(false)
     const file = e.dataTransfer.files[0]
     if (file) handleFileSelect(file)
   }
@@ -123,85 +123,106 @@ export function ImageUpload({ onSuccess, isLoading = false, result }: ImageUploa
       return (
         <div
           key={index}
-          className="absolute border-2 border-emerald-500 pointer-events-none"
-          style={{
-            left: `${left}px`,
-            top: `${top}px`,
-            width: `${width}px`,
-            height: `${height}px`,
-            boxShadow: "0 0 0 1px rgba(0,0,0,0.5)",
-          }}
+          className="absolute detection-box pointer-events-none rounded-sm"
+          style={{ left: `${left}px`, top: `${top}px`, width: `${width}px`, height: `${height}px` }}
         >
-          <div className="absolute top-0 left-0 bg-emerald-500 text-white text-[10px] px-1 transform -translate-y-full whitespace-nowrap">
-            {det.class_name} ({(det.class_confidence * 100).toFixed(0)}%)
+          {/* Label badge */}
+          <div className="absolute top-0 left-0 -translate-y-full">
+            <span className="inline-block bg-emerald-500 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded-sm whitespace-nowrap">
+              {det.class_name} {(det.class_confidence * 100).toFixed(0)}%
+            </span>
           </div>
         </div>
       )
     })
   }
 
+  const isBusy = uploading || isLoading
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">Upload Waste Image</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div
-          className="relative border-2 border-dashed border-emerald-300 rounded-lg p-4 text-center cursor-pointer hover:bg-emerald-50 transition overflow-hidden"
-          onDrop={handleDrop}
-          onDragOver={(e) => e.preventDefault()}
-        >
-          {preview ? (
-            <div className="relative inline-block">
-              <img
-                ref={imageRef}
-                src={preview || "/placeholder.svg"}
-                alt="Preview"
-                className="max-h-96 mx-auto rounded-lg block"
-                onLoad={handleImageLoad}
-              />
-              {renderBoundingBoxes()}
-              <div 
-                className="mt-4 text-sm text-muted-foreground hover:text-emerald-600 transition"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  fileInputRef.current?.click()
-                }}
-              >
-                Click to change image
-              </div>
-            </div>
-          ) : (
-            <div 
-              className="py-12 space-y-2"
-              onClick={() => fileInputRef.current?.click()}
+    <div className="glass-card p-6 space-y-5 animate-fade-in-up">
+      <div className="flex items-center gap-2">
+        <ImageIcon className="h-5 w-5 text-emerald-400" />
+        <h2 className="text-base font-semibold">Upload Waste Image</h2>
+      </div>
+
+      {/* Drop zone */}
+      <div
+        className={`upload-zone relative cursor-pointer transition-all ${isDragOver ? "drag-over" : ""}`}
+        onDrop={handleDrop}
+        onDragOver={(e) => { e.preventDefault(); setIsDragOver(true) }}
+        onDragLeave={() => setIsDragOver(false)}
+        onClick={() => !preview && fileInputRef.current?.click()}
+      >
+        {preview ? (
+          <div className="relative inline-block w-full">
+            {/* Image preview */}
+            <img
+              ref={imageRef}
+              src={preview}
+              alt="Preview"
+              className="max-h-80 mx-auto rounded-lg block object-contain"
+              onLoad={handleImageLoad}
+            />
+            {renderBoundingBoxes()}
+
+            {/* Change image overlay */}
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click() }}
+              className="absolute bottom-2 right-2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg glass-card text-xs text-muted-foreground hover:text-emerald-300 hover:border-emerald-500/40 transition-all"
             >
-              <p className="text-lg font-medium">Drag and drop an image</p>
-              <p className="text-sm text-muted-foreground">or click to browse</p>
+              <RefreshCw className="h-3 w-3" />
+              Change image
+            </button>
+          </div>
+        ) : (
+          <div className="py-14 flex flex-col items-center gap-3">
+            <div className="h-14 w-14 rounded-2xl glass-card flex items-center justify-center text-emerald-400">
+              <UploadCloud className="h-7 w-7" />
             </div>
-          )}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) handleFileSelect(file)
-            }}
-          />
-        </div>
+            <div className="text-center space-y-1">
+              <p className="text-sm font-medium">Drag &amp; drop an image</p>
+              <p className="text-xs text-muted-foreground">or click to browse — JPG, PNG, WEBP</p>
+            </div>
+          </div>
+        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) handleFileSelect(file)
+          }}
+        />
+      </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+      {/* Error */}
+      {error && (
+        <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{error}</p>
+      )}
 
-        <Button
-          onClick={handleUpload}
-          disabled={!preview || uploading || isLoading}
-          className="w-full bg-emerald-600 hover:bg-emerald-700"
-        >
-          {uploading || isLoading ? "Classifying..." : "Classify Waste"}
-        </Button>
-      </CardContent>
-    </Card>
+      {/* Classify button */}
+      <button
+        onClick={handleUpload}
+        disabled={!preview || isBusy}
+        className="shimmer-btn w-full py-3 rounded-xl text-sm font-semibold text-emerald-950 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none disabled:animation-none"
+      >
+        {isBusy ? (
+          <>
+            <span className="h-4 w-4 rounded-full border-2 loading-ring inline-block" />
+            Classifying…
+          </>
+        ) : (
+          <>
+            <Sparkles className="h-4 w-4" />
+            Classify Waste
+          </>
+        )}
+      </button>
+    </div>
   )
 }
+

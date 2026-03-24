@@ -1,9 +1,8 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { User } from "lucide-react"
+import { User, ArrowLeft, Leaf } from "lucide-react"
 
 interface HeaderProps {
   title: string
@@ -14,23 +13,32 @@ interface HeaderProps {
 }
 
 export function Header({ title, subtitle, showProfileButton = true, showBackButton = false, backHref }: HeaderProps) {
-  const router = useRouter()
-
   return (
-    <header className="border-b border-emerald-200 bg-white/50 backdrop-blur-sm sticky top-0 z-10">
+    <header className="sticky top-0 z-20 border-b border-white/5 bg-background/80 backdrop-blur-xl">
       <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold text-emerald-700">{title}</h1>
-          {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
+        {/* Left: logo + title */}
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex-shrink-0 h-9 w-9 rounded-xl glass-card flex items-center justify-center glow-emerald">
+            <Leaf className="h-4 w-4 text-emerald-400" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold gradient-text leading-none truncate">{title}</h1>
+            {subtitle && (
+              <p className="text-xs text-muted-foreground mt-0.5 truncate">{subtitle}</p>
+            )}
+          </div>
         </div>
 
-        <div className="space-x-2 flex items-center">
+        {/* Right: actions */}
+        <div className="flex items-center gap-2">
           {showBackButton && backHref && (
             <Link href={backHref}>
               <Button
-                variant="outline"
-                className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 bg-transparent"
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-emerald-300 hover:bg-emerald-500/10 gap-1.5"
               >
+                <ArrowLeft className="h-4 w-4" />
                 Back
               </Button>
             </Link>
@@ -39,12 +47,12 @@ export function Header({ title, subtitle, showProfileButton = true, showBackButt
           {showProfileButton && (
             <Link href="/dashboard/profile">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
-                className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 bg-transparent"
+                className="text-muted-foreground hover:text-emerald-300 hover:bg-emerald-500/10 rounded-xl"
                 title="Profile"
               >
-                <User className="w-5 h-5" />
+                <User className="h-4 w-4" />
               </Button>
             </Link>
           )}
@@ -53,3 +61,4 @@ export function Header({ title, subtitle, showProfileButton = true, showBackButt
     </header>
   )
 }
+

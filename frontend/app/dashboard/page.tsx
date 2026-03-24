@@ -3,13 +3,11 @@
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ImageUpload } from "@/components/image-upload"
 import ClassificationResult from "@/components/classification-result"
 import { Header } from "@/components/header"
 import Link from "next/link"
-import { Trash2 } from "lucide-react"
+import { Trash2, BarChart2, Recycle, Leaf, AlertTriangle } from "lucide-react"
 import { toast } from "sonner"
 import {
   AlertDialog,
@@ -23,6 +21,37 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
+/* Tiny stat card */
+function StatCard({
+  label,
+  value,
+  accentClass = "text-emerald-400",
+  delay = "0s",
+}: {
+  label: string
+  value: string | number
+  accentClass?: string
+  delay?: string
+}) {
+  return (
+    <div
+      className="glass-card p-5 stat-card space-y-1"
+      style={{ animationDelay: delay }}
+    >
+      <p className={`text-3xl font-extrabold ${accentClass}`}>{value}</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
+    </div>
+  )
+}
+
+/* Disposal icon helper */
+function DisposalIcon({ disposal }: { disposal?: string }) {
+  const d = (disposal ?? "").toLowerCase()
+  if (d === "recyclable") return <Recycle className="h-3.5 w-3.5 text-emerald-400" />
+  if (d === "compostable") return <Leaf className="h-3.5 w-3.5 text-amber-400" />
+  return <AlertTriangle className="h-3.5 w-3.5 text-red-400" />
+}
+
 export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
@@ -31,15 +60,12 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
 
   const handleDelete = async (id: string) => {
-    console.log(`Attempting to delete record with id: ${id}`);
     const supabase = createClient()
-    const { error } = await supabase.from('waste_classifications').delete().eq('id', id);
-
+    const { error } = await supabase.from("waste_classifications").delete().eq("id", id)
     if (error) {
-      console.error("Delete error:", error)
       toast.error("Failed to delete record")
     } else {
-      setHistory(history.filter((item) => item.id !== id))
+      setHistory((h) => h.filter((item) => item.id !== id))
       toast.success("Classification deleted")
     }
   }
@@ -47,15 +73,9 @@ export default function DashboardPage() {
   useEffect(() => {
     const checkAuth = async () => {
       const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
 
-      if (!user) {
-        router.push("/auth/login")
-        return
-      }
-
+      if (!user) { router.push("/auth/login"); return }
       setUser(user)
 
       const { data } = await supabase
@@ -67,25 +87,55 @@ export default function DashboardPage() {
       setHistory(data || [])
       setLoading(false)
     }
-
     checkAuth()
   }, [router])
 
   if (loading) {
     return (
-      <div className="waste-sort-container min-h-screen flex items-center justify-center">
-        <p className="text-lg">Loading...</p>
+      <div className="waste-sort-container min-h-screen flex items-center justify-center gap-3">
+        <span className="h-6 w-6 rounded-full border-2 loading-ring inline-block" />
+        <span className="text-muted-foreground">Loading…</span>
       </div>
     )
   }
 
-  return (
-    <div className="waste-sort-container min-h-screen pb-12">
-      <Header title="IntelliSort" subtitle="Smart waste classification system" showProfileButton={true} />
+  const recyclableCount = history.filter(
+    (i) => (i.disposal ?? i.disposal_type ?? "").toLowerCase() === "recyclable",
+  ).length
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
+  return (
+    <div className="waste-sort-container min-h-screen pb-16">
+      <Header title="IntelliSort" subtitle="Smart waste classification" showProfileButton />
+
+      <main className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+
+        {/* ── Stats row ── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard label="Items Sorted"    value={history.length} delay="0s" />
+          <StatCard label="Recyclables"     value={recyclableCount} accentClass="text-teal-400" delay="0.1s" />
+          <StatCard
+            label="Categories Found"
+            value={new Set(history.map((i) => i.waste_category ?? i.category)).size}
+            accentClass="text-purple-400"
+            delay="0.2s"
+          />
+          <div
+            className="glass-card p-5 stat-card flex flex-col justify-between"
+            style={{ animationDelay: "0.3s" }}
+          >
+            <p className="text-xs text-muted-foreground">Analytics</p>
+            <Link href="/dashboard/analytics">
+              <button className="shimmer-btn w-full mt-3 py-2 rounded-xl text-xs font-semibold text-emerald-950 flex items-center justify-center gap-1.5">
+                <BarChart2 className="h-3.5 w-3.5" />
+                View Details
+              </button>
+            </Link>
+          </div>
+        </div>
+
+        {/* ── Upload + result ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <div className="lg:col-span-3">
             <ImageUpload
               onSuccess={(newResult) => {
                 setResult(newResult)
@@ -95,79 +145,86 @@ export default function DashboardPage() {
             />
           </div>
 
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Quick Stats</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="text-3xl font-bold text-emerald-600">{history.length}</p>
-                  <p className="text-sm text-muted-foreground">Items Sorted</p>
-                </div>
-                <Link href="/dashboard/analytics">
-                  <Button variant="outline" className="w-full text-emerald-700 border-emerald-200 bg-transparent">
-                    View Analytics
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
+          {result && (
+            <div className="lg:col-span-2">
+              <ClassificationResult {...result} />
+            </div>
+          )}
         </div>
 
-        {result && (
-          <div className="mt-8">
-            <ClassificationResult {...result} />
-          </div>
-        )}
-
+        {/* ── Recent classifications ── */}
         {history.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold text-emerald-700 mb-4">Recent Classifications</h2>
+          <section className="space-y-4">
+            <h2 className="text-lg font-bold gradient-text">Recent Classifications</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {history.map((item, idx) => {
-                const displayCategory = item.category ?? item.waste_category
-                const displayDisposal = item.disposal ?? item.disposal_type
+                const displayCategory = item.category ?? item.waste_category ?? "Unknown"
+                const displayDisposal = item.disposal ?? item.disposal_type ?? ""
+                const disposalKey = displayDisposal.toLowerCase()
+                const disposalBadge =
+                  disposalKey === "recyclable" ? "disposal-recyclable"
+                  : disposalKey === "compostable" ? "disposal-compostable"
+                  : "disposal-landfill"
+
                 return (
-                <Card key={idx} className="relative group">
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will permanently delete this classification record from your history.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(item.id)}>Delete</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-emerald-700">{displayCategory}</p>
-                        <p className="text-sm text-muted-foreground">{displayDisposal}</p>
+                  <div
+                    key={item.id ?? idx}
+                    className="glass-card history-card p-4 relative group"
+                    style={{ animationDelay: `${idx * 0.05}s` }}
+                  >
+                    {/* Delete button */}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button
+                          className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
+                          aria-label="Delete classification"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="glass-card border-white/10">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete record?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently remove this classification from your history.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="glass-card border-white/10">Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(item.id)}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    {/* Card content */}
+                    <div className="flex items-start justify-between pr-6">
+                      <div className="space-y-2 min-w-0">
+                        <p className="font-semibold text-sm text-foreground truncate">{displayCategory}</p>
+                        <span className={`waste-category-badge text-xs ${disposalBadge} gap-1`}>
+                          <DisposalIcon disposal={displayDisposal} />
+                          {displayDisposal}
+                        </span>
                       </div>
-                      <p className="text-sm font-medium">{(item.confidence * 100).toFixed(0)}%</p>
+                      <div className="flex-shrink-0 text-right ml-3">
+                        <p className="text-xl font-bold text-emerald-400 leading-none">
+                          {(item.confidence * 100).toFixed(0)}%
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-1">confidence</p>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              )})}
+                  </div>
+                )
+              })}
             </div>
-          </div>
+          </section>
         )}
       </main>
     </div>
   )
 }
+

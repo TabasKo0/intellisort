@@ -3,79 +3,91 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================================
+   IntelliSort Design System — Dark Futuristic Glassmorphism
+   ============================================================ */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  /* Base colours */
+  --background: oklch(0.09 0.015 180);
+  --foreground: oklch(0.96 0.01 180);
+  --card: oklch(0.13 0.02 180);
+  --card-foreground: oklch(0.96 0.01 180);
+  --popover: oklch(0.13 0.02 180);
+  --popover-foreground: oklch(0.96 0.01 180);
+
+  /* Primary — vivid emerald */
+  --primary: oklch(0.72 0.18 160);
+  --primary-foreground: oklch(0.09 0.015 180);
+
+  /* Secondary */
+  --secondary: oklch(0.18 0.025 180);
+  --secondary-foreground: oklch(0.96 0.01 180);
+
+  /* Muted */
+  --muted: oklch(0.18 0.025 180);
+  --muted-foreground: oklch(0.60 0.03 180);
+
+  /* Accent */
+  --accent: oklch(0.22 0.04 180);
+  --accent-foreground: oklch(0.96 0.01 180);
+
+  /* Destructive */
   --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --destructive-foreground: oklch(0.98 0 0);
+
+  /* Border / input */
+  --border: oklch(0.25 0.03 180);
+  --input: oklch(0.18 0.025 180);
+  --ring: oklch(0.72 0.18 160);
+
+  /* Charts */
+  --chart-1: oklch(0.72 0.18 160);
+  --chart-2: oklch(0.60 0.15 220);
+  --chart-3: oklch(0.75 0.17 80);
+  --chart-4: oklch(0.65 0.22 300);
+  --chart-5: oklch(0.60 0.20 30);
+
+  --radius: 0.75rem;
+
+  /* Sidebar */
+  --sidebar: oklch(0.11 0.018 180);
+  --sidebar-foreground: oklch(0.96 0.01 180);
+  --sidebar-primary: oklch(0.72 0.18 160);
+  --sidebar-primary-foreground: oklch(0.09 0.015 180);
+  --sidebar-accent: oklch(0.18 0.025 180);
+  --sidebar-accent-foreground: oklch(0.96 0.01 180);
+  --sidebar-border: oklch(0.25 0.03 180);
+  --sidebar-ring: oklch(0.72 0.18 160);
+
+  /* Design tokens */
+  --glow-emerald: 0 0 20px oklch(0.72 0.18 160 / 0.4);
+  --glow-emerald-sm: 0 0 10px oklch(0.72 0.18 160 / 0.25);
+  --glass-bg: oklch(0.16 0.025 180 / 0.7);
+  --glass-border: oklch(0.35 0.05 180 / 0.4);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+/* Light mode override — kept for accessibility */
+.light {
+  --background: oklch(0.98 0.005 160);
+  --foreground: oklch(0.14 0.015 160);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.14 0.015 160);
+  --primary: oklch(0.52 0.18 160);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.01 160);
+  --secondary-foreground: oklch(0.14 0.015 160);
+  --muted: oklch(0.95 0.01 160);
+  --muted-foreground: oklch(0.50 0.03 160);
+  --accent: oklch(0.92 0.03 160);
+  --accent-foreground: oklch(0.14 0.015 160);
+  --border: oklch(0.88 0.02 160);
+  --input: oklch(0.88 0.02 160);
+  --ring: oklch(0.52 0.18 160);
+  --glass-bg: oklch(1 0 0 / 0.75);
+  --glass-border: oklch(0.80 0.05 160 / 0.5);
 }
 
 @theme inline {
-  /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -114,45 +126,239 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* ============================================================
+   Keyframe animations
+   ============================================================ */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-12px) rotate(1deg); }
+  66%       { transform: translateY(-6px) rotate(-1deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: var(--glow-emerald-sm); }
+  50%       { box-shadow: var(--glow-emerald); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes progress-fill {
+  from { width: 0%; }
+  to   { width: var(--progress-width, 0%); }
+}
+
+@keyframes particle-drift {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0.6; }
+  50%  { opacity: 0.9; }
+  100% { transform: translateY(-80px) translateX(20px) scale(0.8); opacity: 0; }
+}
+
+/* ============================================================
+   Base styles
+   ============================================================ */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "kern" 1, "liga" 1;
   }
 }
 
+/* ============================================================
+   Reusable component classes
+   ============================================================ */
 @layer components {
+
+  /* ── Background ── */
   .waste-sort-container {
-    @apply bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-950 dark:to-slate-900;
+    background: radial-gradient(ellipse at 20% 0%, oklch(0.22 0.10 160 / 0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, oklch(0.20 0.08 220 / 0.2) 0%, transparent 50%),
+                var(--background);
+    min-height: 100vh;
   }
 
+  /* ── Glass card surface ── */
+  .glass-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(16px) saturate(1.5);
+    -webkit-backdrop-filter: blur(16px) saturate(1.5);
+    border-radius: var(--radius);
+  }
+
+  /* ── Neon glow on interactive elements ── */
+  .glow-emerald {
+    box-shadow: var(--glow-emerald-sm);
+    transition: box-shadow 0.25s ease;
+  }
+  .glow-emerald:hover,
+  .glow-emerald:focus-visible {
+    box-shadow: var(--glow-emerald);
+  }
+
+  /* ── Gradient text ── */
+  .gradient-text {
+    background: linear-gradient(135deg, oklch(0.80 0.18 160), oklch(0.65 0.15 200));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Shimmer button ── */
+  .shimmer-btn {
+    background: linear-gradient(
+      90deg,
+      oklch(0.52 0.18 160) 0%,
+      oklch(0.70 0.20 155) 40%,
+      oklch(0.52 0.18 160) 80%
+    );
+    background-size: 200% auto;
+    animation: shimmer 3s linear infinite;
+    transition: transform 0.15s ease, box-shadow 0.25s ease;
+  }
+  .shimmer-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--glow-emerald);
+  }
+  .shimmer-btn:active {
+    transform: translateY(0);
+  }
+
+  /* ── Floating animation helper ── */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  .animate-float-delayed {
+    animation: float 7s ease-in-out 1.5s infinite;
+  }
+
+  /* ── Entry animations ── */
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease both;
+  }
+  .animate-fade-in-scale {
+    animation: fadeInScale 0.4s ease both;
+  }
+
+  /* ── Confidence progress bar ── */
+  .confidence-bar {
+    height: 6px;
+    border-radius: 9999px;
+    background: var(--border);
+    overflow: hidden;
+  }
+  .confidence-bar-fill {
+    height: 100%;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, oklch(0.52 0.18 160), oklch(0.72 0.18 160));
+    animation: progress-fill 1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  /* ── Upload drop zone ── */
+  .upload-zone {
+    border: 2px dashed var(--glass-border);
+    border-radius: var(--radius);
+    transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+  }
+  .upload-zone:hover,
+  .upload-zone.drag-over {
+    border-color: oklch(0.72 0.18 160 / 0.8);
+    background: oklch(0.72 0.18 160 / 0.05);
+    box-shadow: inset 0 0 30px oklch(0.72 0.18 160 / 0.05);
+  }
+
+  /* ── Stat card pulse animation ── */
+  .stat-card {
+    animation: fadeInUp 0.5s ease both;
+    transition: transform 0.2s ease, box-shadow 0.25s ease;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px oklch(0 0 0 / 0.3), var(--glow-emerald-sm);
+  }
+
+  /* ── Category badge colours ── */
   .waste-category-badge {
     @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium;
   }
 
-  .waste-category-plastic {
-    @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200;
+  .waste-category-plastic  { @apply bg-blue-500/15 text-blue-300 ring-1 ring-blue-500/30; }
+  .waste-category-organic  { @apply bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30; }
+  .waste-category-metal    { @apply bg-slate-500/15 text-slate-300 ring-1 ring-slate-500/30; }
+  .waste-category-glass    { @apply bg-cyan-500/15 text-cyan-300 ring-1 ring-cyan-500/30; }
+  .waste-category-paper    { @apply bg-orange-500/15 text-orange-300 ring-1 ring-orange-500/30; }
+  .waste-category-landfill { @apply bg-red-500/15 text-red-300 ring-1 ring-red-500/30; }
+
+  /* ── Disposal method badge colours ── */
+  .disposal-recyclable  { @apply bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30; }
+  .disposal-compostable { @apply bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30; }
+  .disposal-landfill    { @apply bg-red-500/15 text-red-300 ring-1 ring-red-500/30; }
+
+  /* ── History card hover lift ── */
+  .history-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .history-card:hover {
+    transform: translateY(-2px);
+    border-color: oklch(0.72 0.18 160 / 0.4);
+    box-shadow: 0 6px 24px oklch(0 0 0 / 0.3);
   }
 
-  .waste-category-organic {
-    @apply bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200;
+  /* ── Bounding box overlay ── */
+  .detection-box {
+    border: 2px solid oklch(0.72 0.18 160);
+    box-shadow: 0 0 8px oklch(0.72 0.18 160 / 0.5),
+                inset 0 0 8px oklch(0.72 0.18 160 / 0.05);
+    animation: pulse-glow 2s ease-in-out infinite;
   }
 
-  .waste-category-metal {
-    @apply bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200;
+  /* ── Loading spinner ── */
+  .loading-ring {
+    border-color: oklch(0.72 0.18 160 / 0.2);
+    border-top-color: oklch(0.72 0.18 160);
+    animation: spin 0.8s linear infinite;
   }
+}
 
-  .waste-category-glass {
-    @apply bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200;
-  }
-
-  .waste-category-paper {
-    @apply bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200;
-  }
-
-  .waste-category-landfill {
-    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+/* ============================================================
+   Accessibility – respect reduced-motion preference
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-float-delayed,
+  .animate-fade-in-up,
+  .animate-fade-in-scale,
+  .shimmer-btn,
+  .stat-card,
+  .glow-emerald,
+  .detection-box,
+  .confidence-bar-fill {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
   }
 }
