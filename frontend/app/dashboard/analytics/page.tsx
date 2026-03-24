@@ -3,9 +3,12 @@
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import {
+  BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+} from "recharts"
 import { Header } from "@/components/header"
+import { BarChart2, Target, Tag, Recycle } from "lucide-react"
 
 interface Classification {
   id: string
@@ -16,248 +19,241 @@ interface Classification {
   tip: string
 }
 
+/* Palette for charts – emerald / teal / cyan + accent colours */
+const CHART_COLORS = ["#34d399", "#22d3ee", "#a78bfa", "#fb923c", "#f87171", "#60a5fa"]
+
+/* Custom tooltip shared by all charts */
+function ChartTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null
+  return (
+    <div className="glass-card px-3 py-2 text-xs space-y-1">
+      {label && <p className="font-semibold text-foreground">{label}</p>}
+      {payload.map((p: any, i: number) => (
+        <p key={i} style={{ color: p.color ?? p.fill }} className="font-medium">
+          {p.name ?? p.dataKey}: {p.value}
+        </p>
+      ))}
+    </div>
+  )
+}
+
+/* Stat summary card */
+function SummaryCard({
+  label,
+  value,
+  Icon,
+  accentClass,
+  delay = "0s",
+}: {
+  label: string
+  value: string | number
+  Icon: typeof BarChart2
+  accentClass: string
+  delay?: string
+}) {
+  return (
+    <div
+      className="glass-card p-5 stat-card flex items-start gap-4"
+      style={{ animationDelay: delay }}
+    >
+      <div className={`mt-0.5 flex-shrink-0 h-10 w-10 rounded-xl glass-card flex items-center justify-center ${accentClass}`}>
+        <Icon className="h-5 w-5" />
+      </div>
+      <div>
+        <p className={`text-3xl font-extrabold ${accentClass}`}>{value}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+      </div>
+    </div>
+  )
+}
+
 export default function AnalyticsPage() {
   const router = useRouter()
-  const [user, setUser] = useState<any>(null)
   const [classifications, setClassifications] = useState<Classification[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const loadData = async () => {
       const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
 
-      if (!user) {
-        router.push("/auth/login")
-        return
-      }
+      if (!user) { router.push("/auth/login"); return }
 
-      setUser(user)
-
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("waste_classifications")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
 
-      if (error) {
-        console.error("Error fetching classifications:", error)
-      } else {
-        setClassifications(data || [])
-      }
-
+      setClassifications(data || [])
       setLoading(false)
     }
-
     loadData()
   }, [router])
 
   if (loading) {
     return (
-      <div className="waste-sort-container min-h-screen flex items-center justify-center">
-        <p className="text-lg">Loading analytics...</p>
+      <div className="waste-sort-container min-h-screen flex items-center justify-center gap-3">
+        <span className="h-6 w-6 rounded-full border-2 loading-ring inline-block" />
+        <span className="text-muted-foreground">Loading analytics…</span>
       </div>
     )
   }
 
-  // Calculate stats
-  const wasteByCategory = classifications.reduce(
-    (acc, item) => {
-      const existing = acc.find((x) => x.name === item.waste_category)
-      if (existing) {
-        existing.value++
-      } else {
-        acc.push({ name: item.waste_category, value: 1 })
-      }
+  /* ── Derived stats ── */
+  const wasteByCategory = Object.values(
+    classifications.reduce<Record<string, { name: string; value: number }>>((acc, item) => {
+      const key = item.waste_category
+      acc[key] = acc[key] ? { ...acc[key], value: acc[key].value + 1 } : { name: key, value: 1 }
       return acc
-    },
-    [] as Array<{ name: string; value: number }>,
+    }, {}),
   )
 
-  const disposalByType = classifications.reduce(
-    (acc, item) => {
-      const existing = acc.find((x) => x.name === item.disposal_type)
-      if (existing) {
-        existing.value++
-      } else {
-        acc.push({ name: item.disposal_type, value: 1 })
-      }
+  const disposalByType = Object.values(
+    classifications.reduce<Record<string, { name: string; value: number }>>((acc, item) => {
+      const key = item.disposal_type
+      acc[key] = acc[key] ? { ...acc[key], value: acc[key].value + 1 } : { name: key, value: 1 }
       return acc
-    },
-    [] as Array<{ name: string; value: number }>,
+    }, {}),
   )
 
   const avgConfidence =
     classifications.length > 0
-      ? (classifications.reduce((sum, item) => sum + item.confidence, 0) / classifications.length).toFixed(2)
+      ? classifications.reduce((s, i) => s + i.confidence, 0) / classifications.length
       : 0
 
-  const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6"]
+  const recyclableCount = classifications.filter((c) => c.disposal_type === "Recyclable").length
 
   return (
-    <div className="waste-sort-container min-h-screen pb-12">
+    <div className="waste-sort-container min-h-screen pb-16">
       <Header
         title="My Analytics"
         subtitle="Track your waste sorting journey"
-        showProfileButton={true}
-        showBackButton={true}
+        showProfileButton
+        showBackButton
         backHref="/dashboard"
       />
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Items Sorted</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-emerald-700">{classifications.length}</p>
-            </CardContent>
-          </Card>
+      <main className="max-w-6xl mx-auto px-6 py-8 space-y-8">
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Avg. Confidence</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-blue-700">{(Number(avgConfidence) * 100).toFixed(1)}%</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Categories Found</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-purple-700">{wasteByCategory.length}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Recyclables</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-green-700">
-                {classifications.filter((c) => c.disposal_type === "Recyclable").length}
-              </p>
-            </CardContent>
-          </Card>
+        {/* ── Summary cards ── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <SummaryCard label="Total Items Sorted"  value={classifications.length}               Icon={BarChart2} accentClass="text-emerald-400" delay="0s" />
+          <SummaryCard label="Avg. Confidence"      value={`${(avgConfidence * 100).toFixed(1)}%`} Icon={Target}   accentClass="text-blue-400"    delay="0.1s" />
+          <SummaryCard label="Categories Found"     value={wasteByCategory.length}               Icon={Tag}      accentClass="text-purple-400"  delay="0.2s" />
+          <SummaryCard label="Recyclables"          value={recyclableCount}                      Icon={Recycle}  accentClass="text-teal-400"    delay="0.3s" />
         </div>
 
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Waste by Category</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {wasteByCategory.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={wasteByCategory}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, value }) => `${name}: ${value}`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {wasteByCategory.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <p className="text-center text-muted-foreground py-8">
-                  No data yet. Start sorting waste to see analytics!
-                </p>
-              )}
-            </CardContent>
-          </Card>
+        {/* ── Charts ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Pie – waste by category */}
+          <div className="glass-card p-6 space-y-4 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+            <h3 className="text-sm font-semibold text-foreground/80">Waste by Category</h3>
+            {wasteByCategory.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={wasteByCategory}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={3}
+                    dataKey="value"
+                    label={({ name, value }) => `${name}: ${value}`}
+                    labelLine={false}
+                  >
+                    {wasteByCategory.map((_, i) => (
+                      <Cell key={`cell-${i}`} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<ChartTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-center text-muted-foreground py-12 text-sm">No data yet. Start sorting waste!</p>
+            )}
+          </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Disposal Methods</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {disposalByType.length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={disposalByType}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="value" fill="#10b981" />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <p className="text-center text-muted-foreground py-8">No data yet</p>
-              )}
-            </CardContent>
-          </Card>
+          {/* Bar – disposal methods */}
+          <div className="glass-card p-6 space-y-4 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+            <h3 className="text-sm font-semibold text-foreground/80">Disposal Methods</h3>
+            {disposalByType.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={disposalByType} barCategoryGap="35%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis dataKey="name" tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(52,211,153,0.05)" }} />
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                    {disposalByType.map((_, i) => (
+                      <Cell key={`cell-${i}`} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-center text-muted-foreground py-12 text-sm">No data yet</p>
+            )}
+          </div>
         </div>
 
-        {/* Recent Classifications Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Classification History</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {classifications.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left py-3 px-4 font-semibold">Category</th>
-                      <th className="text-left py-3 px-4 font-semibold">Disposal</th>
-                      <th className="text-left py-3 px-4 font-semibold">Confidence</th>
-                      <th className="text-left py-3 px-4 font-semibold">Date</th>
-                      <th className="text-left py-3 px-4 font-semibold">Tip</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {classifications.map((item) => (
-                      <tr key={item.id} className="border-b border-border hover:bg-muted/50 transition">
-                        <td className="py-3 px-4 font-medium text-emerald-700">{item.waste_category}</td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              item.disposal_type === "Recyclable"
-                                ? "bg-green-100 text-green-800"
-                                : item.disposal_type === "Compostable"
-                                  ? "bg-amber-100 text-amber-800"
-                                  : "bg-red-100 text-red-800"
-                            }`}
-                          >
+        {/* ── Classification history table ── */}
+        <div className="glass-card overflow-hidden animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
+          <div className="p-5 border-b border-white/5">
+            <h3 className="text-sm font-semibold text-foreground/80">Classification History</h3>
+          </div>
+          {classifications.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/5 text-xs text-muted-foreground">
+                    <th className="text-left py-3 px-5 font-medium">Category</th>
+                    <th className="text-left py-3 px-5 font-medium">Disposal</th>
+                    <th className="text-left py-3 px-5 font-medium">Confidence</th>
+                    <th className="text-left py-3 px-5 font-medium">Date</th>
+                    <th className="text-left py-3 px-5 font-medium hidden md:table-cell">Tip</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {classifications.map((item) => {
+                    const dKey = item.disposal_type.toLowerCase()
+                    const badge =
+                      dKey === "recyclable" ? "disposal-recyclable"
+                      : dKey === "compostable" ? "disposal-compostable"
+                      : "disposal-landfill"
+                    return (
+                      <tr
+                        key={item.id}
+                        className="border-b border-white/5 hover:bg-white/3 transition-colors"
+                      >
+                        <td className="py-3 px-5 font-medium text-emerald-400">{item.waste_category}</td>
+                        <td className="py-3 px-5">
+                          <span className={`waste-category-badge text-xs ${badge}`}>
                             {item.disposal_type}
                           </span>
                         </td>
-                        <td className="py-3 px-4">{(item.confidence * 100).toFixed(1)}%</td>
-                        <td className="py-3 px-4 text-muted-foreground">
+                        <td className="py-3 px-5 tabular-nums">{(item.confidence * 100).toFixed(1)}%</td>
+                        <td className="py-3 px-5 text-muted-foreground">
                           {new Date(item.created_at).toLocaleDateString()}
                         </td>
-                        <td className="py-3 px-4 text-xs">{item.tip}</td>
+                        <td className="py-3 px-5 text-xs text-muted-foreground hidden md:table-cell max-w-[220px] truncate">
+                          {item.tip}
+                        </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-center text-muted-foreground py-8">
-                No classifications yet. Upload an image to get started!
-              </p>
-            )}
-          </CardContent>
-        </Card>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-center text-muted-foreground py-12 text-sm">
+              No classifications yet. Upload an image to get started!
+            </p>
+          )}
+        </div>
       </main>
     </div>
   )
 }
+
