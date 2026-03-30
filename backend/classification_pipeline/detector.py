@@ -7,7 +7,19 @@ class WasteDetector:
         self.model = YOLO(config.YOLO_WEIGHTS)
 
     def detect_and_crop(self, img_pil, conf=config.YOLO_CONFIDENCE_THRESHOLD, padding=config.CROP_PADDING_RATIO):
+        """
+        Detect waste objects and crop regions from image.
+        
+        Args:
+            img_pil: PIL Image object
+            conf: Confidence threshold for detection
+            padding: Padding ratio around bounding boxes
+        
+        Returns:
+            List of detection dictionaries with bounding boxes and cropped images
+        """
         img_w, img_h = img_pil.size
+        
         # Run inference
         results = self.model(img_pil, conf=conf, verbose=False)[0]
         boxes = results.boxes
@@ -19,6 +31,11 @@ class WasteDetector:
             yolo_conf = float(box.conf[0].cpu())
             cls_id = int(box.cls[0].cpu())
             yolo_class_name = names[cls_id]
+
+            # Check confidence against minimum threshold
+            if yolo_conf < config.YOLO_CONFIDENCE_MIN:
+                # Skip low-confidence detections or flag as ambiguous
+                continue
 
             bw, bh = x2 - x1, y2 - y1
             pad_x, pad_y = bw * padding, bh * padding
@@ -34,4 +51,6 @@ class WasteDetector:
                 "yolo_class": yolo_class_name,
                 "crop_image": crop_pil
             })
+            
+        print("rat/",len(detections),end="\n\n")
         return detections
