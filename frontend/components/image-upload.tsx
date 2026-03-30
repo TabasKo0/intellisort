@@ -124,7 +124,7 @@ export function ImageUpload({ onSuccess, isLoading = false, result }: ImageUploa
         <div
           key={index}
           className="absolute detection-box pointer-events-none rounded-sm"
-          style={{ left: `${left}px`, top: `${top}px`, width: `${width}px`, height: `${height}px` }}
+          style={{ left: `${left+140}px`, top: `${top}px`, width: `${width}px`, height: `${height}px` }}
         >
           {/* Label badge */}
           <div className="absolute top-0 left-0 -translate-y-full">
