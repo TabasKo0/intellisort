@@ -75,7 +75,9 @@ All classification results are stored per user in a Supabase database, enabling 
 │  │    → Detects & crops waste objects           │  │
 │  │                                              │  │
 │  │  Stage 2: ResNet50 Classifier                │  │
-│  │    → Classifies each crop into 9 categories  │  │
+│  │    → Preprocesses crop (CLAHE + sharpening) │  │
+│  │    → Classifies each crop into 8 categories  │  │
+│  │    → IDK check: low-confidence → Fallback    │  │
 │  └──────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────┘
                         │
@@ -194,7 +196,12 @@ The `WasteDetector` class wraps an **Ultralytics YOLO** model. It:
 | `yolo_class` | `str` | Class label assigned by YOLO |
 | `crop_image` | `PIL.Image` | The cropped image region (removed before JSON serialisation) |
 
-**Key parameter:** `YOLO_CONFIDENCE_THRESHOLD = 0.25` – detections below this confidence are discarded by YOLO.
+**Key parameters:**
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| `YOLO_CONFIDENCE_THRESHOLD` | `0.50` | Passed to YOLO inference; boxes below this score are discarded before they reach the pipeline |
+| `YOLO_CONFIDENCE_MIN` | `0.45` | Secondary check inside `detect_and_crop`: any box that passed YOLO's filter but falls below this value is still skipped to further reduce false positives |
 
 ---
 
@@ -212,10 +219,17 @@ ResNet50 backbone (pretrained weights=None, loaded from checkpoint)
             Linear(2048 → 512)
             ReLU
             Dropout(0.2)
-            Linear(512 → 9)   ← one output per waste category
+            Linear(512 → 8)   ← one output per waste category
 ```
 
-**Input preprocessing pipeline** applied to every crop before inference:
+**Image enhancement pipeline** applied to every crop before the tensor transform:
+
+| Step | Details |
+|------|---------|
+| CLAHE | Converts the crop to LAB colour space and applies Contrast Limited Adaptive Histogram Equalization to the L channel (`CLAHE_CLIP_LIMIT = 2.0`, `CLAHE_TILE_GRID_SIZE = (8, 8)`). Controlled by `ENABLE_CLAHE`. |
+| Sharpening | Applies an unsharp-mask filter using a Gaussian blur kernel to restore edge definitions lost during up-sampling of small crops. Strength controlled by `SHARPENING_KERNEL_STRENGTH = 1.5` and `ENABLE_SHARPENING`. |
+
+**Tensor transform pipeline** applied after image enhancement:
 
 | Step | Details |
 |------|---------|
@@ -223,11 +237,12 @@ ResNet50 backbone (pretrained weights=None, loaded from checkpoint)
 | ToTensor | Converts PIL image to `[0, 1]` float tensor |
 | Normalize | Mean `[0.485, 0.456, 0.406]`, Std `[0.229, 0.224, 0.225]` (ImageNet statistics) |
 
-**Inference:**
+**Inference & IDK (I Don't Know) Framework:**
 1. The preprocessed tensor is forwarded through the model.
 2. `softmax` is applied to the raw logits to produce class probabilities.
 3. The class with the highest probability (`argmax`) is selected.
-4. The method returns `(class_name: str, confidence: float)`.
+4. **IDK check:** If the top confidence is below `RESNET_CONFIDENCE_MIN = 0.50`, the method returns the `FALLBACK_CLASS` (`"Miscellaneous Trash"`) together with the original (low) confidence score, rather than making an unreliable prediction.
+5. Otherwise the method returns `(class_name: str, confidence: float)` for the predicted class.
 
 **Checkpoint loading:** The classifier supports two checkpoint formats:
 - A plain `state_dict` (raw weights dictionary).
@@ -246,9 +261,9 @@ ResNet50 backbone (pretrained weights=None, loaded from checkpoint)
 
 **Processing logic:**
 
-1. **Run YOLO** on the full image → list of detections.
-2. **If detections exist** – classify each crop individually and collect `(class_name, class_confidence)` pairs.
-3. **If no detections** – fall back to classifying the entire image as a single "crop" (bounding box covers the full image, `yolo_confidence = 0.0`, `source = "whole_image"`).
+1. **Run YOLO** on the full image → list of detections (boxes below `YOLO_CONFIDENCE_MIN` are discarded).
+2. **If detections exist** – for each crop, run the CLAHE + sharpening enhancement pipeline, then classify with ResNet50. The IDK check inside the classifier may return `"Miscellaneous Trash"` if confidence is too low.
+3. **If no detections** – fall back to classifying the entire image as a single "crop" (bounding box covers the full image, `yolo_confidence = 0.0`, `source = "whole_image"`). The IDK check still applies.
 4. **Return the single best result** – the candidate with the highest `class_confidence`. Even when multiple objects are detected, only the most confident classification is returned to keep the API response simple and deterministic.
 
 ---
@@ -262,18 +277,26 @@ ResNet50 backbone (pretrained weights=None, loaded from checkpoint)
 | `DEVICE` | `cuda` / `cpu` | Automatically selects GPU if CUDA is available |
 | `YOLO_WEIGHTS` | `classification_pipeline/models/detector_model.pt` | Path to YOLO model weights |
 | `RESNET_WEIGHTS` | `classification_pipeline/models/classifier_model.pt` | Path to ResNet50 checkpoint |
-| `CLASSES` | 9 strings (see below) | Ordered list of waste category names |
-| `YOLO_CONFIDENCE_THRESHOLD` | `0.25` | Minimum YOLO detection confidence to keep a box |
+| `CLASSES` | 8 strings (see below) | Ordered list of waste category names (excludes the fallback class) |
+| `YOLO_CONFIDENCE_THRESHOLD` | `0.50` | Confidence threshold passed to YOLO inference; boxes below this are discarded by YOLO |
+| `YOLO_CONFIDENCE_MIN` | `0.45` | Secondary minimum threshold in `detect_and_crop`; boxes that pass YOLO's filter but fall below this are still skipped |
 | `CROP_PADDING_RATIO` | `0.10` | Fraction of box dimensions added as padding around each crop |
 | `RESNET_MEAN` | `[0.485, 0.456, 0.406]` | ImageNet channel mean for normalisation |
 | `RESNET_STD` | `[0.229, 0.224, 0.225]` | ImageNet channel std for normalisation |
 | `RESNET_INPUT_SIZE` | `224` | Input image size (pixels, square) |
+| `RESNET_CONFIDENCE_MIN` | `0.50` | IDK threshold: classifier confidence below this triggers the fallback class |
+| `FALLBACK_CLASS` | `"Miscellaneous Trash"` | Class returned when the IDK check fires (confidence too low) |
+| `ENABLE_CLAHE` | `True` | Enable CLAHE contrast enhancement as part of crop preprocessing |
+| `CLAHE_CLIP_LIMIT` | `2.0` | CLAHE clip limit (controls contrast amplification) |
+| `CLAHE_TILE_GRID_SIZE` | `(8, 8)` | CLAHE tile grid size |
+| `ENABLE_SHARPENING` | `True` | Enable unsharp-mask sharpening after CLAHE |
+| `SHARPENING_KERNEL_STRENGTH` | `1.5` | Multiplier for the unsharp-mask kernel |
 
 ---
 
 ### Waste Categories & Disposal Mapping
 
-The pipeline classifies waste into **9 categories**. Each category maps to a disposal method and bin color:
+The pipeline classifies waste into **8 categories**. Each category maps to a disposal method and bin color:
 
 | Category | Disposal Method | Bin Color |
 |----------|----------------|-----------|
@@ -281,11 +304,12 @@ The pipeline classifies waste into **9 categories**. Each category maps to a dis
 | Food Organics | Compost | 🟢 Green |
 | Glass | Recycle | 🔵 Blue |
 | Metal | Recycle | 🔵 Blue |
-| Miscellaneous Trash | Landfill | ⚫ Black |
 | Paper | Recycle | 🔵 Blue |
 | Plastic | Recycle | 🔵 Blue |
 | Textile Trash | Donation / Special Recycling | 🟡 Yellow |
 | Vegetation | Compost / Yard Waste | 🟢 Green |
+
+> **Fallback:** When the IDK check fires (classifier confidence below `RESNET_CONFIDENCE_MIN`), the result is reported as **Miscellaneous Trash → Landfill / ⚫ Black**, but this class is not part of the trained `CLASSES` list — it is returned exclusively as a low-confidence signal.
 
 ---
 
@@ -312,9 +336,9 @@ The main user-facing page. It:
 - Verifies the user is authenticated; redirects to `/auth/login` otherwise.
 - Loads the user's classification history from Supabase (`waste_classifications` table, ordered newest-first).
 - Renders the `ImageUpload` component for new classifications.
-- Displays a **Quick Stats** card with total items sorted and a link to Analytics.
-- Shows the latest `ClassificationResult` after a successful classification.
-- Lists the 10 most recent classifications as cards (with a delete button).
+- Displays a **Stats row** with live-updating counts for total items sorted, recyclables, and distinct categories found, plus a shortcut to the Analytics page.
+- Shows the latest `ClassificationResult` immediately after a successful classification (no page reload required).
+- Maintains a **live classification feed**: on each successful upload the new result is prepended to the in-memory history list and displayed instantly in the Recent Classifications section, with the 10 most recent entries shown as cards (each with a delete button).
 
 #### Analytics (`/dashboard/analytics`)
 
